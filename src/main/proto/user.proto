@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "id.go.bps.user";
+option java_outer_classname = "UserProto";
+option objc_class_prefix = "USER";
+
+package user.grpc.interfaces;
+import "google/protobuf/empty.proto";
+import "request.proto";
+
+message Rank {
+    string id = 1;
+    string code = 2;
+    string name = 3;
+    string lastId = 4;
+}
+
+message Section {
+    string id = 1;
+    string code = 2;
+    string name = 3;
+    string lastId = 4;
+}
+
+message Position {
+    string id = 1;
+    string name = 2;
+    string lastId = 3;
+}
+
+message UserType {
+    string id = 1;
+    string code = 2;
+    string name = 3;
+    string lastId = 5;
+}
+
+message User {
+    string id = 1;
+    string nip = 2;
+    string username = 3;
+    string password = 4;
+    string fullname = 5;
+    string color = 6;
+    Section section = 7;
+    Rank rank = 8;
+    Position position = 9;
+    User supervisor = 10;
+    UserType type = 11;
+    string lastId = 12;
+}
+
+service RankService {
+    rpc list(google.protobuf.Empty) returns (stream Rank) {}
+    rpc get(bps.protobuf.RequestID) returns (Rank) {}
+    rpc add(Rank) returns (bps.protobuf.Response) {}
+    rpc addGet(Rank) returns (Rank) {}
+    rpc update(Rank) returns (bps.protobuf.Response) {}
+    rpc updateGet(Rank) returns (Rank) {}
+    rpc delete(bps.protobuf.RequestID) returns (bps.protobuf.Response) {}
+    rpc search(bps.protobuf.SearchQuery) returns (stream Rank) {}
+}
+
+service SectionService {
+    rpc list(google.protobuf.Empty) returns (stream Section) {}
+    rpc get(bps.protobuf.RequestID) returns (Section) {}
+    rpc add(Section) returns (bps.protobuf.Response) {}
+    rpc addGet(Section) returns (Section) {}
+    rpc update(Section) returns (bps.protobuf.Response) {}
+    rpc updateGet(Section) returns (Section) {}
+    rpc delete(bps.protobuf.RequestID) returns (bps.protobuf.Response) {}
+    rpc search(bps.protobuf.SearchQuery) returns (stream Section) {}
+}
+
+service PositionService {
+    rpc list(google.protobuf.Empty) returns (stream Position) {}
+    rpc get(bps.protobuf.RequestID) returns (Position) {}
+    rpc add(Position) returns (bps.protobuf.Response) {}
+    rpc addGet(Position) returns (Position) {}
+    rpc update(Position) returns (bps.protobuf.Response) {}
+    rpc updateGet(Position) returns (Position) {}
+    rpc delete(bps.protobuf.RequestID) returns (bps.protobuf.Response) {}
+    rpc search(bps.protobuf.SearchQuery) returns (stream Position) {}
+}
+
+service UserTypeService {
+    rpc list(google.protobuf.Empty) returns (stream UserType) {}
+    rpc get(bps.protobuf.RequestID) returns (UserType) {}
+    rpc add(UserType) returns (bps.protobuf.Response) {}
+    rpc addGet(UserType) returns (UserType) {}
+    rpc update(UserType) returns (bps.protobuf.Response) {}
+    rpc updateGet(UserType) returns (UserType) {}
+    rpc delete(bps.protobuf.RequestID) returns (bps.protobuf.Response) {}
+    rpc search(bps.protobuf.SearchQuery) returns (stream UserType) {}
+}
+
+service UserService {
+    rpc list(google.protobuf.Empty) returns (stream User) {}
+    rpc get(bps.protobuf.RequestID) returns (User) {}
+    rpc add(User) returns (bps.protobuf.Response) {}
+    rpc addGet(User) returns (User) {}
+    rpc update(User) returns (bps.protobuf.Response) {}
+    rpc updateGet(User) returns (User) {}
+    rpc delete(bps.protobuf.RequestID) returns (bps.protobuf.Response) {}
+    rpc search(bps.protobuf.SearchQuery) returns (stream User) {}
+    rpc login(bps.protobuf.LoginRequest) returns (User) {}
+}

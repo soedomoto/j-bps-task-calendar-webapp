@@ -1,0 +1,687 @@
+{% extends 'html/frontpage.html' %} {% block title %}Kalender{% endblock %} {% block head %}
+<style>
+    .form-group {
+        margin-bottom: 0px !important;
+    }
+    .help-block {
+        margin-bottom: 0px !important;
+    }
+    .highlight {
+        text-shadow: 0 -1px 0 #286090 !important;
+        background-image: -webkit-linear-gradient(top,#337ab7 0,#2b669a 100%) !important;
+        background-image: -o-linear-gradient(top,#337ab7 0,#2b669a 100%) !important;
+        background-image: -webkit-gradient(linear,left top,left bottom,from(#337ab7),to(#2b669a)) !important;
+        background-image: linear-gradient(to bottom,#337ab7 0,#2b669a 100%) !important;
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff337ab7', endColorstr='#ff2b669a', GradientType=0) !important;
+        background-repeat: repeat-x !important;
+        border-color: #2b669a !important;
+    }
+    .list-group-item.event, .list-group-item.user {
+        overflow-x: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .list-group-item-thumb {
+        width: 20px;
+        height: 20px;
+        background: red;
+        margin-right: 10px;
+    }
+    .dropup {
+        bottom:100% !important;
+        top:auto !important;
+    }
+</style>
+{% endblock %} {% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="list-group event-list">
+            <a href="#" class="list-group-item active">Daftar Kegiatan</a>
+        </div>
+        <div class="list-group user-list">
+            <a href="#" class="list-group-item active">Daftar Petugas</a>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_add_edit_task" tabindex="-1" role="dialog" aria-labelledby="modal_add_edit_task_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form class="form-horizontal" method="post" enctype=multipart/form-data>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_add_edit_task_label">Kegiatan</h5>
+                </div>
+                <div class="modal-body">
+                    <fieldset>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Tanggal Kegiatan</label>
+                                    <input name="start" type="hidden" />
+                                    <label class="col-md-8 control-label task-date"></label>
+                                </div>
+                            </li>
+                            <li class="list-group-item" action-role="edit">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Nomor Surat</label>
+                                    <div class="col-md-8">
+                                        <input name="task_number" type="text" placeholder="Tidak Wajib Diisi" class="form-control input-md" autocomplete="off">
+                                        <span class="help-block">Ubah nomor surat untuk kegiatan pada [TANGGAL] tersebut.</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Petugas</label>
+                                    <div class="col-md-8 task-user-input">
+                                        <input name="user_ids" data-role="tagsinput" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan nama atasan langsung dari [NAMA] (jika pegawai)</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Nama Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <input name="event_id" type="hidden">
+                                        <input name="event_name" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan nama kegiatan pada [TANGGAL] tersebut</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Tempat Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <input name="where" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan tempat kegiatan pada [TANGGAL] tersebut</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Target Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <input name="target" type="text" placeholder="Wajib Diisi" class="form-control" autocomplete="off" required="">
+                                            <span class="input-group-btn" style="width: 40% !important;">
+                                                <select name="unit_id" class="form-control" title="Select Unit"></select>
+                                            </span>
+                                            <span class="input-group-btn">
+                                                <button class="btn btn-secondary browse_unit" type="button"><i class="fa fa-navicon"></i></button>
+                                            </span>
+                                        </div>
+                                        <span class="help-block">Isikan target kegiatan pada [TANGGAL] tersebut</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item" action-role="edit">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Realisasi Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <input name="realization" type="text" placeholder="Tidak Wajib Diisi" class="form-control input-md" autocomplete="off">
+                                        <span class="help-block">Isikan realisasi kegiatan pada [TANGGAL] tersebut. Satuan yang digunakan sama dengan satuan pada target.</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item" action-role="edit">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Kualitas Realisasi</label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <input name="quality" type="text" placeholder="Tidak Wajib Diisi" class="form-control" autocomplete="off">
+                                            <span class="input-group-btn">
+                                                <button class="btn btn-secondary browse_unit" type="button">%</button>
+                                            </span>
+                                        </div>
+                                        <span class="help-block">Isikan target kegiatan pada [TANGGAL] tersebut</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Hasil/Catatan Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <textarea name="notes" class="form-control" placeholder="Tidak Wajib Diisi" rows="5"></textarea>
+                                        <span class="help-block">Isikan catatan kegiatan pada [TANGGAL] tersebut</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Lampiran</label>
+                                    <div class="col-md-8 attachments-inner">
+                                        <ul class="attachments" style="list-style: none; padding: 0px;"></ul>
+                                        <input type="file" name="attachment" />
+                                        <span class="help-block">Isikan catatan kegiatan pada [TANGGAL] tersebut</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </fieldset>
+                </div>
+                <div class="modal-footer">
+                    <div class="btn-group pull-left task-action">
+                        <a type="button" class="btn btn-danger btn-delete">Hapus</a>
+                        <button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-toggle="dropdown"><span class="caret"></span></button>
+                        <ul class="dropdown-menu dropup">
+                            <li><a class="btn-print-tl" target="_blank" href="#">Cetak Surat Tugas</a></li>
+                        </ul>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_browse_unit" tabindex="-1" role="dialog" aria-labelledby="modal_browse_unit_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_browse_unit_label">List Unit Target/Realisasi</h5>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-hover table-responsive rank-list">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama Unit</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                        <tr>
+                            <th colspan="10" style="text-align: center;">
+                                <i class="fa fa-spinner fa-2x fa-pulse fa-fw"></i>
+                                <span>Loading...</span>
+                            </th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success pull-left add">Tambah Unit</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_add_edit_unit" tabindex="-1" role="dialog" aria-labelledby="modal_add_edit_unit_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_add_edit_unit_label">Tambah Unit Target/Realisasi</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" />
+                    <ul class="list-group">
+                        <li class="list-group-item" style="height: 56px; line-height: 35px;">
+                            Nama Unit
+                            <div class="pull-right">
+                                <input name="id" type="hidden" />
+                                <input name="name" type="text" class="form-control" autocomplete="off" />
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_select_ckp_period" tabindex="-1" role="dialog" aria-labelledby="modal_select_ckp_period_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="get" target="_blank" class="form-horizontal">
+                <fieldset>
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title" id="modal_select_ckp_period_label">Pilih Periode CKPT/CKPR</h5>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="user" />
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Tanggal Awal Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <input name="from" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan tanggal awal [KEGIATAN]</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Tanggal Akhir Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <input name="to" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan tanggal akhir [KEGIATAN]</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Cetak</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block menu %}
+
+{% endblock %} {% block tail %}
+<script>
+    jQuery(function($) {
+        $.fn.eventCalendar = function(params) {
+            var cal = this;
+            var defaultOpt = {
+                events: params.calendar.allTask,
+                loading: function(bool) {
+                    if (bool) $("#loading").show();
+                    else $("#loading").hide();
+                },
+                dayClick: function(date, jsEvent, view) {
+                    var $day = $(this);
+                    $('#modal_add_edit_task').data('trigger', $day).data('date', date).modal('show');
+                },
+                eventClick: function(task, jsEvent, view) {
+                    var $task = $(this);
+                    var $triggers = $('[task-id=' + $task.attr('task-id') + ']')
+                    $('#modal_add_edit_task').data('trigger', $triggers).data('task', task).modal('show');
+                },
+                eventDrop: function(task, delta, revertFunc, jsEvent, ui, view) {
+                    if(!task.editable) return false;
+                    $.post(params.calendar.moveTask + '/' + task.id, {
+                        start: task.start.format("YYYY-MM-DD HH:mm:ss"),
+                        end: task.end ? task.end.format("YYYY-MM-DD HH:mm:ss") : null,
+                    });
+                    return false;
+                },
+                eventResize: function(task, delta, revertFunc, jsEvent, ui, view) {
+                    if(!task.editable) return false;
+                    $.post(params.calendar.moveTask + '/' + task.id, {
+                        start: task.start.format("YYYY-MM-DD HH:mm:ss"),
+                        end: task.end ? task.end.format("YYYY-MM-DD HH:mm:ss") : null,
+                    });
+                    return false;
+                },
+                eventRender: function(task, element, view) {
+                    $(element)
+                        .attr('user-id', task.user.id)
+                        .attr('event-id', task.event.id)
+                        .attr('task-id', task.id)
+                        .css("background-color", "#" + task.user.color)
+                        .css("border-color", "#" + task.event.color);
+
+                    if (! ('tasks' in view)) view['tasks'] = [];
+                    view['tasks'].push(task);
+                },
+                eventAfterAllRender: function(view) {
+                    $('.event-list .event').remove();
+                    $('.user-list .user').remove();
+
+                    var users = [];
+                    var events = [];
+
+                    if ('tasks' in view) {
+                        view['tasks'].forEach(function(task, idx) {
+                            if ($('.event-list .event[event-id=' + task.event.id + ']').length == 0) {
+                                $('<a href="#" class="list-group-item list-group-item-action event">' +
+                                    '<div class="input-group">' +
+                                        '<div class="pull-left list-group-item-thumb" style="background-color: #' + task.event.color +
+                                        '"></div>' + task.event.title +
+                                    '</div>' +
+                                '</a>').attr('event-id', task.event.id).appendTo($('.event-list'));
+
+                                events.push(task.event.id);
+                            }
+
+                            if ($('.user-list .user[user-id=' + task.user.id + ']').length == 0) {
+                                $('<a href="#" class="list-group-item list-group-item-action user">' +
+                                    '<div class="input-group">' +
+                                        '<div class="pull-left list-group-item-thumb" style="background-color: #' + task.user.color +
+                                        '"></div>' + task.user.fullname +
+                                    '</div>' +
+                                '</a>').attr('user-id', task.user.id).appendTo($('.user-list'));
+
+                                users.push(task.user.id);
+                            }
+                        });
+
+                        view['tasks'] = [];
+                    }
+
+                    $('.event-list .event').each(function() {
+                        $event = $(this);
+                        $event.popover({
+                            container: 'body', trigger: 'focus', placement: 'bottom', html: true,
+                            content: '<ul class="nav">' +
+                                '<li><a class="btn-print-tl" target="_blank" href="/api/task/task-letter?events=' +
+                                    $event.attr('event-id') + '&users=' + users.join(',') + '">Cetak Surat Tugas</a></li>' +
+                            '</ul>'
+                        });
+                    });
+
+                    $('.user-list .user').each(function() {
+                        $user = $(this);
+                        $userPO = $user.popover({
+                            container: 'body', trigger: 'focus', placement: 'bottom', html: true,
+                            content: '<ul class="nav">' +
+                                '<li><a class="btn-print-tl" target="_blank" href="/api/task/task-letter?users=' +
+                                    $user.attr('user-id') + '&events=' + events.join(',') + '">Cetak Surat Tugas</a></li>' +
+                                '<li><a class="btn-print-ckpt" href="#" user-id="' + $user.attr('user-id') +
+                                    '">Cetak CKP-T</a></li>' +
+                                '<li><a class="btn-print-ckpr" href="#" user-id="' + $user.attr('user-id') +
+                                    '">Cetak CKP-R</a></li>' +
+                            '</ul>'
+                        });
+                    });
+                }
+            }
+
+            params.calendar = $.extend(true, defaultOpt, params.calendar);
+            var fc = $(this).fullCalendar(params.calendar);
+            return $.extend($(this), fc);
+        }
+
+        $("#calendar").eventCalendar(opts);
+
+        /** USER **/
+
+        $modalSCP = $('#modal_select_ckp_period').on('show.bs.modal', function(e) {
+            $('[name=user]', $modalSCP).val($modalSCP.data('user'));
+            $('[name=from]', $modalSCP).datepicker({ dateFormat: 'yy-mm-dd' });
+            $('[name=to]', $modalSCP).datepicker({ dateFormat: 'yy-mm-dd' });
+
+            $('form', $modalSCP).attr('action', $modalSCP.data('url')).on('submit', function() {
+                e.preventDefault();
+                $modalSCP.modal('hide');
+            });
+        }).on('hidden.bs.modal', function(e) {
+            $('[name=user]', $modalSCP).val('');
+            $('[name=from]', $modalSCP).val('');
+            $('[name=to]', $modalSCP).val('');
+        });
+
+        $(document).on('click', '.btn-print-ckpt', function(e) {
+            e.preventDefault();
+            $modalSCP.data('user', $(this).attr('user-id')).data('url', '/api/task/ckpt').modal('show');
+        }).on('click', '.btn-print-ckpr', function(e) {
+            e.preventDefault();
+            $modalSCP.data('user', $(this).attr('user-id')).data('url', '/api/task/ckpr').modal('show');
+        });
+
+
+        /** TASK **/
+
+        $modalAET = $('#modal_add_edit_task').on('show.bs.modal', function(e) {
+            date = $modalAET.data('date');
+            task = $modalAET.data('task');
+            $modalAET.data('refresh', function() {
+                $.get('/api/unit/list', function(pRest) {
+                    if (pRest.success) {
+                        $('[name=unit_id] option', $modalAET).remove();
+
+                        pRest.data.forEach(function(unit, idx) {
+                            $('<option value="' + unit.id + '">' + unit.name + '</option>').appendTo($('[name=unit_id]', $modalAET));
+                        });
+                    }
+                });
+            });
+
+            $trigger = $modalAET.data('trigger');
+            $trigger.addClass("highlight");
+
+            if (task == null || task == undefined) {
+                $('form', $(this)).attr('action', opts.calendar.addTask);
+                $('[name=user_ids]', $modalAET).tokenInput(opts.calendar.searchUserRaw,
+                    {queryParam: 'query', propertyToSearch: 'fullname', preventDuplicates: true, theme: 'facebook'});
+                $(".token-input-dropdown-facebook").css("z-index", 1000000);
+                $('.task-action', $(this)).hide();
+            }
+
+            if (! (date == null && date == undefined)) {
+                $('[name=start]', $modalAET).val(date.format("YYYY-MM-DD HH:mm:ss"));
+                $('.task-date', $modalAET).html(date.format("dddd, D MMMM YYYY"));
+            }
+
+            $.checkCredential(function(user) {
+                $eventId = $('[name=event_id]', $modalAET);
+                $eventName = $('[name=event_name]', $modalAET).typeahead({
+                    onSelect: function(item) {
+                        $eventId.val(item.value);
+                        $eventName.val(item.text)
+                    },
+                    ajax: {
+                        url: opts.calendar.searchEvent,
+                        timeout: 500,
+                        displayField: "title",
+                        triggerLength: 1,
+                        method: "get",
+                        preProcess: function(data) {
+                            if (data.success === false) {
+                                return false;
+                            }
+
+                            events = [];
+                            data.data.forEach(function(event, i) {
+                                if (event.event_type == 'U') {
+                                    events.push(event);
+                                } else if (event.event_type == 'T' && event.creator.id == user.id) {
+                                    events.push(event);
+                                }
+                            });
+
+                            return events;
+                        }
+                    }
+                });
+            });
+
+            $modalAET.data('refresh')();
+
+            $('.browse_unit', $modalAET).on('click', function() {
+                $('#modal_browse_unit').data('trigger', $modalAET).modal('show');
+            });
+
+            setOnAttachmentChange($modalAET);
+
+            if (task != null && task != undefined) {
+                $('form', $(this)).attr('action', opts.calendar.editTask + '/' + task.id);
+                $('.task-date', $modalAET).html(task.start.format("dddd, D MMMM YYYY") + (task.end == null ? "" : " - "
+                    + task.end.subtract(1, 'minutes').format("dddd, D MMMM YYYY")));
+                $('[name=start]', $modalAET).val(task.start.format("YYYY-MM-DD HH:mm:ss"));
+                $('[name=task_number]', $modalAET).val(task.task_number);
+                $('[name=user_ids]', $modalAET).tokenInput(opts.calendar.searchUserRaw,
+                    {queryParam: 'query', propertyToSearch: 'fullname', preventDuplicates: true, theme: 'facebook',
+                    prePopulate: [task.user]});
+                $(".token-input-dropdown-facebook").css("z-index", 1000000);
+                $('[name=event_id]', $modalAET).val(task.event.id);
+                $('[name=event_name]', $modalAET).val(task.event.title);
+                $('[name=where]', $modalAET).val(task.where);
+                $('[name=target]', $modalAET).val(task.target);
+                $('[name=realization]', $modalAET).val(task.realization);
+                $('[name=quality]', $modalAET).val(task.quality);
+                $('[name=notes]', $modalAET).val(task.notes);
+                $('.attachments', $modalAET).empty();
+                task.attachments.forEach(function(att, idx) {
+                    $('<li><input type="hidden" name="attachments" value="' + att.id + '" />' +
+                                '<a target="_blank" href="/api/task/attachment/' + att.id + '">' + att.title +
+                                '</a></li>').appendTo($('.attachments', $modalAET))
+                });
+                $('.task-action', $(this)).show();
+                $('.btn-print-tl', $(this)).attr('href', '/api/task/task-letter?users=' + task.user.id + '&events=' + task.event.id);
+                $('.btn-delete', $(this)).on('click', function(e) {
+                    e.preventDefault();
+                    $.get('/api/task/delete/' + task.id, {}, function(resp) {
+                        if (resp.success) {
+                            $modalAET.modal('hide');
+                            $("#calendar").fullCalendar('refetchEvents');
+                        }
+                    });
+                });
+
+                $('[action-role=edit]', $modalAET).show();
+            } else {
+                $('[action-role=edit]', $modalAET).hide();
+            }
+        }).on('shown.bs.modal', function(e) {
+            task = $(this).data('task');
+
+            if (task != null && task != undefined) {
+                $('[name=unit_id] option', $(this)).val(task.unit.id);
+            }
+        }).on('hidden.bs.modal', function(e) {
+            $modalAET.data('date', null);
+            $modalAET.data('task', null);
+
+            $trigger = $modalAET.data('trigger');
+            $trigger.removeClass("highlight");
+
+            $('.token-input-list-facebook', $modalAET).remove();
+            $(".token-input-dropdown-facebook").remove();
+            $('[name=user_ids]', $modalAET).show();
+            $('[name=start]', $modalAET).val('');
+            $('[name=where]', $modalAET).val('');
+            $('[name=event_id]', $modalAET).val('');
+            $('[name=event_name]', $modalAET).val('');
+            $('[name=target]', $modalAET).val('');
+            $('[name=realization]', $modalAET).val('');
+            $('[name=quality]', $modalAET).val('');
+            $('[name=notes]', $modalAET).val('');
+            $('.attachments-inner', $modalAET).html(
+                '<ul class="attachments" style="list-style: none; padding: 0px;"></ul>' +
+                '<input type="file" name="attachment" />' +
+                '<span class="help-block">Isikan catatan kegiatan pada [TANGGAL] tersebut</span>');
+        });
+
+        $('#modal_add_edit_task form').submit(function(e) {
+            e.preventDefault();
+
+            $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                if (resp.success) {
+                    $modalAET.modal('hide');
+                    $("#calendar").fullCalendar('refetchEvents');
+                }
+            });
+        });
+
+        function setOnAttachmentChange($parent) {
+            $('[type=file]', $parent).on('change', function() {
+                $form = $('<form method="POST" action="/api/task/upload-attachment" enctype="multipart/form-data">')
+                            .appendTo($('body'));
+                $progress = $('<div class="progress">' +
+                    '<div class="progress-bar" role="progressbar" style="width: 0%; height: 20px;" ' +
+                        'aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>' +
+                '</div>').insertBefore($(this));
+                $bar = $progress.find('.progress-bar')
+                $(this).appendTo($form);
+
+                $form.ajaxForm({
+                    beforeSend: function() {
+                        var percentVal = '0%';
+                        $bar.width(percentVal)
+                        $bar.html(percentVal);
+                    },
+                    uploadProgress: function(event, position, total, percentComplete) {
+                        var percentVal = percentComplete + '%';
+                        $bar.width(percentVal)
+                        $bar.html(percentVal);
+                    },
+                    success: function(text, status, xhr, form) {
+                        var percentVal = '100%';
+                        $bar.width(percentVal)
+                        $bar.html(percentVal);
+                        $('<li><input type="hidden" name="attachments" value="' + text.data.id + '" />' +
+                            '<a href="/api/task/attachment/' + text.data.id + '">' + text.data.title +
+                            '</a></li>').appendTo($('.attachments', $parent))
+                    },
+                    complete: function(xhr) {
+                        $progress.replaceWith('<input type="file" name="attachment" />');
+                        setOnAttachmentChange();
+                    }
+                });
+
+                $form.submit();
+            });
+        }
+
+        /** UNIT **/
+
+        $modalBU = $('#modal_browse_unit').on('show.bs.modal', function(e) {
+            $trigger = $modalBU.data('trigger');
+
+            $modalBU.data('refresh', function() {
+                $.get('/api/unit/list', function(pRest) {
+                    if (pRest.success) {
+                        $('tbody .unit', $modalBU).remove();
+
+                        pRest.data.forEach(function(unit, idx) {
+                            $('<tr unit-id="' + unit.id + '" class="unit">' +
+                                '<th scope="row">' + unit.id + '</th>' +
+                                '<td>' + unit.name + '</td>' +
+                            '</tr>').data(unit).appendTo($('tbody', $modalBU));
+                        });
+
+                        $('tfoot', $modalBU).hide();
+                    }
+                });
+            });
+
+            $modalBU.data('refresh')();
+            $trigger.data('refresh')();
+        });
+
+        $(document).on('click', '#modal_browse_unit .add', function() {
+            $('#modal_add_edit_unit').modal('show');
+        });
+
+        $modalAEU = $('#modal_add_edit_unit').on('show.bs.modal', function(e) {
+            var $modal = $(this)
+            var unit = $modal.data('unit');
+
+            if (unit == null || unit == undefined) {
+                $('form', $modal).attr('action', '/api/unit/add');
+            } else {
+                $('form', $modal).attr('action', '/api/unit/edit/' + unit.id);
+                $('form [name=id]', $modal).val(unit.id);
+                $('form [name=name]', $modal).val(unit.name);
+            }
+        }).on('hidden.bs.modal', function(e) {
+            $(this).data('unit', null);
+            $('form [name=id]', $(this)).val('');
+            $('form [name=name]', $(this)).val('');
+        });
+
+        $('#modal_add_edit_unit form').submit(function(e) {
+            e.preventDefault();
+
+            $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                if (resp.success) {
+                    $modalAEU.modal('hide');
+                    $('#modal_browse_unit').data('refresh')();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,392 @@
+{% extends 'html/frontpage.html' %} {% block title %}Kegiatan{% endblock %} {% block head %}
+<style>
+    .form-group {
+        margin-bottom: 0px !important;
+    }
+    .help-block {
+        margin-bottom: 0px !important;
+    }
+</style>
+{% endblock %} {% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="list-group event-list">
+            <a href="#" class="list-group-item list-group-item-action list-group-item-danger add-event">Tambah Kegiatan</a>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <ul class="list-group">
+            <li class="list-group-item active">Form Kegiatan</li>
+            <li class="list-group-item">
+                <form class="form-horizontal modal-event" method="post" action="/api/event/add">
+                    <fieldset>
+                        <ul class="list-group">
+                            <input type="hidden" name="creator_id" />
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Judul Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <input name="title" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan judul kegiatan</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Tanggal Awal Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <input name="start" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan tanggal awal [KEGIATAN]</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Tanggal Akhir Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <input name="end" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan tanggal akhir [KEGIATAN]</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Warna</label>
+                                    <div class="col-md-8">
+                                        <input name="color" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan warna yang akan menjadi merepresentasikan [KEGIATAN]</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Seksi Penanggung Jawab</label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <input name="section_id" type="hidden">
+                                            <input name="section_name" type="text" placeholder="Wajib Diisi" class="form-control" autocomplete="off" required="">
+                                            <span class="input-group-btn">
+                                                <button class="btn btn-secondary browse_section" type="button"><i class="fa fa-navicon"></i></button>
+                                            </span>
+                                        </div>
+                                        <span class="help-block">Isikan seksi yang bertanggungjawab terhadap [KEGIATAN]</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Tipe Kegiatan</label>
+                                    <div class="col-md-8">
+                                        <label class="radio-inline">
+                                            <input type="radio" name="event_type" value="U" checked>Utama
+                                        </label>
+                                        <label class="radio-inline">
+                                            <input type="radio" name="event_type" value="T">Tambahan
+                                        </label>
+                                        <span class="help-block">Isikan tipe [KEGIATAN]</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <button type="button" class="btn btn-danger btn-remove pull-left">Hapus</button>
+                        <div class="pull-right">
+                            <button type="button" class="btn">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_browse_section" tabindex="-1" role="dialog" aria-labelledby="modal_browse_section_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_browse_section_label">List Bagian/Subbagian/Seksi</h5>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-hover table-responsive section-list">
+                        <thead>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Nama Seksi</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                        <tr>
+                            <th colspan="10" style="text-align: center;">
+                                <i class="fa fa-spinner fa-2x fa-pulse fa-fw"></i>
+                                <span>Loading...</span>
+                            </th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success pull-left add">Tambah Seksi</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_add_edit_section" tabindex="-1" role="dialog" aria-labelledby="modal_add_edit_section_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_add_edit_section_label">Tambah Bagian/Subbagian/Seksi</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" />
+                    <ul class="list-group">
+                        <li class="list-group-item" style="height: 56px; line-height: 35px;">
+                            Kode Seksi
+                            <div class="pull-right">
+                                <input name="code" type="text" class="form-control" autocomplete="off" />
+                            </div>
+                        </li>
+                        <li class="list-group-item" style="height: 56px; line-height: 35px;">
+                            Nama Seksi
+                            <div class="pull-right">
+                                <input name="name" type="text" class="form-control" autocomplete="off" />
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_remove_confirmation" tabindex="-1" role="dialog" aria-labelledby="modal_remove_confirmation_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_remove_confirmation_label">Hapus</h5>
+                </div>
+                <div class="modal-body">
+                    Apakah anda yakin akan menghapus record <span class="record-title"></span> ini?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-success btn-remove">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block menu %}
+
+{% endblock %} {% block tail %}
+<script>
+    jQuery(function($) {
+        /** EVENT **/
+
+        function listEvent() {
+            $.get('/api/event/list', function(uResp) {
+                if(uResp.success) {
+                    $('.event-list .event').remove();
+                    uResp.data.forEach(function(event, idx) {
+                        event.start = event.start.split('T')[0];
+                        event.end = event.end.split('T')[0];
+
+                        $('<a href="#" class="list-group-item list-group-item-action event" event-id="' + event.id +
+                            '">' + event.title + '</a>').data(event).appendTo($('.event-list'));
+                    });
+                }
+            });
+        }
+
+        listEvent();
+
+        function resetForm() {
+            $('.modal-event').attr('action', '/api/event/add');
+            $('.modal-event [name=title]').val('');
+            $('.modal-event [name=start]').val('');
+            $('.modal-event [name=end]').val('');
+            $('.modal-event [name=color]').val('');
+            $('.modal-event [name=section_id]').val('');
+            $('.modal-event [name=section_name]').val('');
+            $('.modal-event [name=event_type][value=U]').prop('checked', true);
+            $('.modal-event .btn-remove').data('event', null);
+
+            $.checkCredential(function(user) {
+                if (user.section) {
+                    $('.modal-event [name=creator_id]').val(user.id);
+                    $('.modal-event [name=section_id]').val(user.section.id);
+                    $('.modal-event [name=section_name]').val(user.section.name);
+                }
+            });
+        }
+
+        $(document).on('click', '.event-list .add-event', function() {
+            resetForm();
+        });
+
+        $(document).on('click', '.event-list .event', function() {
+            var event = $(this).data();
+
+            $('.modal-event').attr('action', '/api/event/edit/' + event.id);
+            $('.modal-event [name=title]').val(event.title);
+            $('.modal-event [name=start]').val(event.start);
+            $('.modal-event [name=end]').val(event.end);
+            $('.modal-event [name=color]').val(event.color);
+            $('.modal-event [name=section_id]').val(event.section ? event.section.id : '');
+            $('.modal-event [name=section_name]').val(event.section ? event.section.name : '');
+            $('.modal-event [name=creator_id]').val(event.creator ? event.creator.id : '');
+            $('.modal-event [name=event_type][value=' + event.event_type + ']').prop('checked', true);
+            $('.modal-event .btn-remove').data('event', event);
+        });
+
+        $('.modal-event [name=start]').datepicker({ dateFormat: 'yy-mm-dd' });
+        $('.modal-event [name=end]').datepicker({ dateFormat: 'yy-mm-dd' });
+        $('.modal-event [name=color]').colorPicker();
+
+        $('.modal-event').submit(function(e) {
+            e.preventDefault();
+
+            $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                if (resp.success) {
+                    listEvent();
+                    resetForm();
+                }
+            });
+        });
+
+        $('.modal-event .btn-remove').on('click', function() {
+            var event = $(this).data('event');
+             $('#modal_remove_confirmation').data('id', event.id).data('title', event.title).modal('show');
+        });
+
+        var $modalRC = $('#modal_remove_confirmation').on('show.bs.modal', function(e) {
+            $('.record-title', $(this)).html($(this).data('title'));
+        }).on('hidden.bs.modal', function(e) {
+            $(this).data('id', null).data('title', null);
+        });
+
+        $(document).on('click', '#modal_remove_confirmation .btn-remove', function() {
+            $.get('/api/event/delete/' + $modalRC.data('id'), function(resp) {
+                if (resp.success) {
+                    $('.event-list .event[event-id=' + $modalRC.data('id') + ']').remove();
+                    resetForm();
+                    $modalRC.modal('hide');
+                }
+            });
+        });
+
+        /** SECTION **/
+
+        $(document).on('click', '.modal-event .browse_section', function() {
+            $('#modal_browse_section').modal('show');
+        });
+
+        $sectionId = $('.modal-event [name=section_id]');
+        $sectionName = $('.modal-event [name=section_name]').typeahead({
+            onSelect: function(item) {
+                $sectionId.val(item.value);
+                $sectionName.val(item.text)
+            },
+            ajax: {
+                url: "/api/section/search",
+                timeout: 500,
+                displayField: "name",
+                triggerLength: 1,
+                method: "get",
+                preProcess: function(data) {
+                    if (data.success === false) {
+                        return false;
+                    }
+                    return data.data;
+                }
+            }
+        });
+
+        $('#modal_browse_section').on('show.bs.modal', function(e) {
+            $modal = $(this);
+            $modal.data('refresh', function() {
+                $.get('/api/section/list', function(pRest) {
+                    if (pRest.success) {
+                        $('tbody .section', $modal).remove();
+
+                        pRest.data.forEach(function(section, idx) {
+                            $('<tr section-id="' + section.id + '" class="section">' +
+                                '<th scope="row">' + section.code + '</th>' +
+                                '<td>' + section.name + '</td>' +
+                            '</tr>').data(section).appendTo($('tbody', $modal));
+                        });
+
+                        $('tfoot', $modal).hide();
+                    }
+                });
+            });
+
+            $modal.data('refresh')();
+        });
+
+        $(document).on('dblclick', '#modal_browse_section tr.section', function() {
+            section = $(this).data();
+            $('.modal-event [name=section_id]').val(section.id);
+            $('.modal-event [name=section_name]').val(section.name);
+
+            $('#modal_browse_section').modal('hide');
+        });
+
+        $(document).on('click', '#modal_browse_section .add', function() {
+            $('#modal_add_edit_section').modal('show');
+        });
+
+        $modalAES = $('#modal_add_edit_section').on('show.bs.modal', function(e) {
+            var $modal = $(this)
+            var section = $modal.data('section');
+
+            if (section == null || section == undefined) {
+                $('form', $modal).attr('action', '/api/section/add');
+            } else {
+                $('form', $modal).attr('action', '/api/section/edit/' + section.id);
+                $('form [name=id]', $modal).val(section.id);
+                $('form [name=code]', $(this)).val(section.code);
+                $('form [name=name]', $modal).val(section.name);
+            }
+        }).on('hidden.bs.modal', function(e) {
+            $(this).data('section', null);
+            $('form [name=id]', $(this)).val('');
+            $('form [name=code]', $(this)).val('');
+            $('form [name=name]', $(this)).val('');
+        });
+
+        $('#modal_add_edit_section form').submit(function(e) {
+            e.preventDefault();
+
+            $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                if (resp.success) {
+                    $modalAES.modal('hide');
+                    $('#modal_browse_section').data('refresh')();
+                }
+            });
+        });
+
+        $.checkCredential(function(user) {
+            if (user.section) {
+                $('.modal-event [name=creator_id]').val(user.id);
+                $sectionId.val(user.section.id);
+                $sectionName.val(user.section.name);
+            }
+        });
+    });
+</script>
+{% endblock %}

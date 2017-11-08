@@ -1,0 +1,760 @@
+{% extends 'html/frontpage.html' %} {% block title %}Pengguna{% endblock %} {% block head %}
+<style>
+    .form-group {
+        margin-bottom: 0px !important;
+    }
+    .help-block {
+        margin-bottom: 0px !important;
+    }
+</style>
+{% endblock %} {% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="list-group user-list">
+            <a href="#" class="list-group-item list-group-item-action list-group-item-danger add-user">Tambah Pengguna</a>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <ul class="list-group">
+            <li class="list-group-item active">Form Pengguna</li>
+            <li class="list-group-item">
+                <form class="form-horizontal modal-user" method="post" action="/api/user/add">
+                    <fieldset>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Nama Lengkap</label>
+                                    <div class="col-md-8">
+                                        <input name="fullname" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan nama lengkap</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">NIP</label>
+                                    <div class="col-md-8">
+                                        <input name="nip" type="text" placeholder="Tidak Wajib Diisi" class="form-control input-md" autocomplete="off">
+                                        <span class="help-block">Isikan NIP dari [NAMA] (jika pegawai)</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Bagian/Subbagian/Seksi</label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <input name="section_id" type="hidden">
+                                            <input name="section_name" type="text" placeholder="Tidak Wajib Diisi" class="form-control" autocomplete="off">
+                                            <span class="input-group-btn">
+                                                <button class="btn btn-secondary browse_section" type="button"><i class="fa fa-navicon"></i></button>
+                                            </span>
+                                        </div>
+                                        <span class="help-block">Isikan seksi dari [NAMA] (jika pegawai)</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Jabatan</label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <input name="position_id" type="hidden">
+                                            <input name="position_name" type="text" placeholder="Wajib Diisi" class="form-control" autocomplete="off" required="">
+                                            <span class="input-group-btn">
+                                                <button class="btn btn-secondary browse_position" type="button"><i class="fa fa-navicon"></i></button>
+                                            </span>
+                                        </div>
+                                        <span class="help-block">Isikan jabatan dari [NAMA]</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Warna</label>
+                                    <div class="col-md-8">
+                                        <input name="color" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Isikan warna yang akan menjadi merepresentasikan [NAMA]</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Atasan Langsung</label>
+                                    <div class="col-md-8">
+                                        <input name="supervisor_id" type="hidden">
+                                        <input name="supervisor_name" type="text" placeholder="Tidak Wajib Diisi" class="form-control input-md" autocomplete="off">
+                                        <span class="help-block">Isikan nama atasan langsung dari [NAMA] (jika pegawai)</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Pangkat/Golongan</label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <input name="rank_id" type="hidden">
+                                            <input name="rank_name" type="text" placeholder="Tidak Wajib Diisi" class="form-control" autocomplete="off">
+                                            <span class="input-group-btn">
+                                                <button class="btn btn-secondary browse_rank" type="button"><i class="fa fa-navicon"></i></button>
+                                            </span>
+                                        </div>
+                                        <span class="help-block">Isikan pangkat/golongan dari [NAMA] (jika pegawai)</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Username</label>
+                                    <div class="col-md-8">
+                                        <input name="username" type="text" placeholder="Tidak Wajib Diisi" class="form-control input-md" autocomplete="off">
+                                        <span class="help-block">Isikan username dari [NAMA] untuk login</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Password</label>
+                                    <div class="col-md-8">
+                                        <input name="password" type="password" placeholder="Tidak Wajib Diisi" class="form-control input-md" autocomplete="off">
+                                        <span class="help-block">Isikan password dari [NAMA] untuk login</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <button type="button" class="btn btn-danger btn-remove pull-left">Hapus</button>
+                        <div class="pull-right">
+                            <button type="button" class="btn">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modal_browse_section" tabindex="-1" role="dialog" aria-labelledby="modal_browse_section_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_browse_section_label">List Bagian/Subbagian/Seksi</h5>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-hover table-responsive section-list">
+                        <thead>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Nama Seksi</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                        <tr>
+                            <th colspan="10" style="text-align: center;">
+                                <i class="fa fa-spinner fa-2x fa-pulse fa-fw"></i>
+                                <span>Loading...</span>
+                            </th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success pull-left add">Tambah Seksi</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_add_edit_section" tabindex="-1" role="dialog" aria-labelledby="modal_add_edit_section_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_add_edit_section_label">Tambah Bagian/Subbagian/Seksi</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" />
+                    <ul class="list-group">
+                        <li class="list-group-item" style="height: 56px; line-height: 35px;">
+                            Kode Seksi
+                            <div class="pull-right">
+                                <input name="code" type="text" class="form-control" autocomplete="off" />
+                            </div>
+                        </li>
+                        <li class="list-group-item" style="height: 56px; line-height: 35px;">
+                            Nama Seksi
+                            <div class="pull-right">
+                                <input name="name" type="text" class="form-control" autocomplete="off" />
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_browse_position" tabindex="-1" role="dialog" aria-labelledby="modal_browse_position_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_browse_position_label">List Jabatan</h5>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-hover table-responsive position-list">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Jabatan</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                        <tr>
+                            <th colspan="10" style="text-align: center;">
+                                <i class="fa fa-spinner fa-2x fa-pulse fa-fw"></i>
+                                <span>Loading...</span>
+                            </th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success pull-left add">Tambah Jabatan</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_add_edit_position" tabindex="-1" role="dialog" aria-labelledby="modal_add_edit_position_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_add_edit_position_label">Tambah Jabatan</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" />
+                    <ul class="list-group">
+                        <li class="list-group-item" style="height: 56px; line-height: 35px;">
+                            Nama Jabatan
+                            <div class="pull-right">
+                                <input name="name" type="text" class="form-control" autocomplete="off" />
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_browse_rank" tabindex="-1" role="dialog" aria-labelledby="modal_browse_rank_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_browse_rank_label">List Pangkat/Golongan</h5>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-hover table-responsive rank-list">
+                        <thead>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Pangkat/Golongan</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                        <tr>
+                            <th colspan="10" style="text-align: center;">
+                                <i class="fa fa-spinner fa-2x fa-pulse fa-fw"></i>
+                                <span>Loading...</span>
+                            </th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success pull-left add">Tambah Golongan</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_add_edit_rank" tabindex="-1" role="dialog" aria-labelledby="modal_add_edit_rank_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_add_edit_rank_label">Tambah Pangkat/Golongan</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" />
+                    <ul class="list-group">
+                        <li class="list-group-item" style="height: 56px; line-height: 35px;">
+                            Kode Pangkat
+                            <div class="pull-right">
+                                <input name="code" type="text" class="form-control" autocomplete="off" />
+                            </div>
+                        </li>
+                        <li class="list-group-item" style="height: 56px; line-height: 35px;">
+                            Nama Golongan
+                            <div class="pull-right">
+                                <input name="name" type="text" class="form-control" autocomplete="off" />
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_remove_confirmation" tabindex="-1" role="dialog" aria-labelledby="modal_remove_confirmation_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_remove_confirmation_label">Hapus</h5>
+                </div>
+                <div class="modal-body">
+                    Apakah anda yakin akan menghapus record <span class="record-title"></span> ini?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-success btn-remove">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block menu %}
+
+{% endblock %} {% block tail %}
+<script>
+    jQuery(function($) {
+        function listUser() {
+            $.get('/api/user/list', function(uResp) {
+                if(uResp.success) {
+                    $('.user-list .user').remove();
+                    uResp.data.forEach(function(user, idx) {
+                        $('<a href="#" class="list-group-item list-group-item-action user" user-id="' + user.id +
+                            '">' + user.fullname + '</a>').data(user).appendTo($('.user-list'));
+                    });
+                }
+            });
+        }
+
+        listUser();
+
+        function resetForm() {
+            $('.modal-user').attr('action', '/api/user/add');
+            $('.modal-user [name=fullname]').val('');
+            $('.modal-user [name=nip]').val('');
+            $('.modal-user [name=color]').val('');
+            $('.modal-user [name=position_id]').val('');
+            $('.modal-user [name=rank_id]').val('');
+            $('.modal-user [name=supervisor_id]').val('');
+            $('.modal-user [name=position_name]').val('');
+            $('.modal-user [name=rank_name]').val('');
+            $('.modal-user [name=supervisor_name]').val('');
+            $('.modal-user [name=username]').val('');
+            $('.modal-user [name=password]').val('');
+            $('.modal-user [name=section_id]').val('');
+            $('.modal-user [name=section_name]').val('');
+            $('.modal-user .btn-remove').data('user', null);
+        }
+
+        $(document).on('click', '.user-list .add-user', function() {
+            resetForm();
+        });
+
+        $(document).on('click', '.user-list .user', function() {
+            var user = $(this).data();
+
+            $('.modal-user').attr('action', '/api/user/edit/' + user.id);
+            $('.modal-user [name=fullname]').val(user.fullname);
+            $('.modal-user [name=nip]').val(user.nip);
+            $('.modal-user [name=color]').val(user.color);
+            $('.modal-user [name=position_id]').val(user.position ? user.position.id : '');
+            $('.modal-user [name=rank_id]').val(user.rank ? user.rank.id : '');
+            $('.modal-user [name=supervisor_id]').val(user.supervisor ? user.supervisor.id : '');
+            $('.modal-user [name=position_name]').val(user.position ? user.position.name : '');
+            $('.modal-user [name=rank_name]').val(user.rank ? user.rank.name : '');
+            $('.modal-user [name=supervisor_name]').val(user.supervisor ? user.supervisor.fullname : '');
+            $('.modal-user [name=username]').val(user.username);
+            $('.modal-user [name=password]').val('');
+            $('.modal-user [name=section_id]').val(user.section ? user.section.id : '');
+            $('.modal-user [name=section_name]').val(user.section ? user.section.name : '');
+            $('.modal-user .btn-remove').data('user', user);
+        });
+
+        $('.modal-user [name=color]').colorPicker();
+
+        $('.modal-user').submit(function(e) {
+            e.preventDefault();
+
+            if ($('.modal-user [name=position_name]').val() === '') {
+                $('.modal-user [name=position_id]').val('')
+            }
+            if ($('.modal-user [name=rank_name]').val() === '') {
+                $('.modal-user [name=rank_id]').val('')
+            }
+
+            $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                if (resp.success) {
+                    listUser();
+                    resetForm();
+                }
+            });
+        });
+
+        $('.modal-user .btn-remove').on('click', function() {
+            var user = $(this).data('user');
+             $('#modal_remove_confirmation').data('id', user.id).data('title', user.fullname).modal('show');
+        });
+
+        var $modalRC = $('#modal_remove_confirmation').on('show.bs.modal', function(e) {
+            $('.record-title', $(this)).html($(this).data('title'));
+        }).on('hidden.bs.modal', function(e) {
+            $(this).data('id', null).data('title', null);
+        });
+
+        $(document).on('click', '#modal_remove_confirmation .btn-remove', function() {
+            console.log($modalRC.data('id'));
+            $.get('/api/user/delete/' + $modalRC.data('id'), function(resp) {
+                if (resp.success) {
+                    $('.user-list .user[user-id=' + $modalRC.data('id') + ']').remove();
+                    resetForm();
+                    $modalRC.modal('hide');
+                }
+            });
+        });
+
+        /** SUPERVISOR **/
+
+        $supervisorId = $('.modal-user [name=supervisor_id]');
+        $supervisorName = $('.modal-user [name=supervisor_name]').typeahead({
+            onSelect: function(item) {
+                $supervisorId.val(item.value);
+                $supervisorName.val(item.text)
+            },
+            ajax: {
+                url: "/api/user/search",
+                timeout: 500,
+                displayField: "fullname",
+                triggerLength: 1,
+                method: "get",
+                preProcess: function(data) {
+                    if (data.success === false) {
+                        return false;
+                    }
+                    return data.data;
+                }
+            }
+        });
+
+        /** POSITION **/
+
+        $(document).on('click', '.modal-user .browse_position', function() {
+            $('#modal_browse_position').modal('show');
+        });
+
+        $positionId = $('.modal-user [name=position_id]');
+        $positionName = $('.modal-user [name=position_name]').typeahead({
+            onSelect: function(item) {
+                $positionId.val(item.value);
+                $positionName.val(item.text)
+            },
+            ajax: {
+                url: "/api/position/search",
+                timeout: 500,
+                displayField: "name",
+                triggerLength: 1,
+                method: "get",
+                preProcess: function(data) {
+                    if (data.success === false) {
+                        return false;
+                    }
+                    return data.data;
+                }
+            }
+        });
+
+        $('#modal_browse_position').on('show.bs.modal', function(e) {
+            $modal = $(this);
+            $modal.data('refresh', function() {
+                $.get('/api/position/list', function(pRest) {
+                    if (pRest.success) {
+                        $('tbody .position', $modal).remove();
+
+                        pRest.data.forEach(function(pos, idx) {
+                            $('<tr position-id="' + pos.id + '" class="position">' +
+                                '<th scope="row">' + pos.id + '</th>' +
+                                '<td>' + pos.name + '</td>' +
+                            '</tr>').data(pos).appendTo($('tbody', $modal));
+                        });
+
+                        $('tfoot', $modal).hide();
+                    }
+                });
+            });
+
+            $modal.data('refresh')();
+        });
+
+        $(document).on('dblclick', '#modal_browse_position tr.position', function() {
+            position = $(this).data();
+            $('.modal-user [name=position_id]').val(position.id);
+            $('.modal-user [name=position_name]').val(position.name);
+
+            $('#modal_browse_position').modal('hide');
+        });
+
+        $(document).on('click', '#modal_browse_position .add', function() {
+            $('#modal_add_edit_position').modal('show');
+        });
+
+        $modalAEP = $('#modal_add_edit_position').on('show.bs.modal', function(e) {
+            var $modal = $(this)
+            var position = $modal.data('position');
+
+            if (position == null || position == undefined) {
+                $('form', $modal).attr('action', '/api/position/add');
+            } else {
+                $('form', $modal).attr('action', '/api/position/edit/' + position.id);
+                $('form [name=id]', $modal).val(position.id);
+                $('form [name=name]', $modal).val(position.name);
+            }
+        }).on('hidden.bs.modal', function(e) {
+            $(this).data('position', null);
+            $('form [name=id]', $(this)).val('');
+            $('form [name=name]', $(this)).val('');
+        });
+
+        $('#modal_add_edit_position form').submit(function(e) {
+            e.preventDefault();
+
+            $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                if (resp.success) {
+                    $modalAEP.modal('hide');
+                    $('#modal_browse_position').data('refresh')();
+                }
+            });
+        });
+
+        /** RANK **/
+
+        $(document).on('click', '.modal-user .browse_rank', function() {
+            $('#modal_browse_rank').modal('show');
+        });
+
+        $rankId = $('.modal-user [name=rank_id]');
+        $rankName = $('.modal-user [name=rank_name]').typeahead({
+            onSelect: function(item) {
+                $rankId.val(item.value);
+                $rankName.val(item.text)
+            },
+            ajax: {
+                url: "/api/rank/search",
+                timeout: 500,
+                displayField: "name",
+                triggerLength: 1,
+                method: "get",
+                preProcess: function(data) {
+                    if (data.success === false) {
+                        return false;
+                    }
+                    return data.data;
+                }
+            }
+        });
+
+        $('#modal_browse_rank').on('show.bs.modal', function(e) {
+            $modal = $(this);
+            $modal.data('refresh', function() {
+                $.get('/api/rank/list', function(pRest) {
+                    if (pRest.success) {
+                        $('tbody .rank', $modal).remove();
+
+                        pRest.data.forEach(function(rank, idx) {
+                            $('<tr rank-id="' + rank.id + '" class="rank">' +
+                                '<th scope="row">' + rank.code + '</th>' +
+                                '<td>' + rank.name + '</td>' +
+                            '</tr>').data(rank).appendTo($('tbody', $modal));
+                        });
+
+                        $('tfoot', $modal).hide();
+                    }
+                });
+            });
+
+            $modal.data('refresh')();
+        });
+
+        $(document).on('dblclick', '#modal_browse_rank tr.rank', function() {
+            rank = $(this).data();
+            $('.modal-user [name=rank_id]').val(rank.id);
+            $('.modal-user [name=rank_name]').val(rank.name);
+
+            $('#modal_browse_rank').modal('hide');
+        });
+
+        $(document).on('click', '#modal_browse_rank .add', function() {
+            $('#modal_add_edit_rank').modal('show');
+        });
+
+        $modalAER = $('#modal_add_edit_rank').on('show.bs.modal', function(e) {
+            var $modal = $(this)
+            var rank = $modal.data('rank');
+
+            if (rank == null || rank == undefined) {
+                $('form', $modal).attr('action', '/api/rank/add');
+            } else {
+                $('form', $modal).attr('action', '/api/rank/edit/' + rank.id);
+                $('form [name=id]', $modal).val(rank.id);
+                $('form [name=code]', $(this)).val(rank.code);
+                $('form [name=name]', $modal).val(rank.name);
+            }
+        }).on('hidden.bs.modal', function(e) {
+            $(this).data('rank', null);
+            $('form [name=id]', $(this)).val('');
+            $('form [name=code]', $(this)).val('');
+            $('form [name=name]', $(this)).val('');
+        });
+
+        $('#modal_add_edit_rank form').submit(function(e) {
+            e.preventDefault();
+
+            $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                if (resp.success) {
+                    $modalAER.modal('hide');
+                    $('#modal_browse_rank').data('refresh')();
+                }
+            });
+        });
+
+        /** SECTION **/
+
+        $(document).on('click', '.modal-user .browse_section', function() {
+            $('#modal_browse_section').modal('show');
+        });
+
+        $sectionId = $('.modal-user [name=section_id]');
+        $sectionName = $('.modal-user [name=section_name]').typeahead({
+            onSelect: function(item) {
+                $sectionId.val(item.value);
+                $sectionName.val(item.text)
+            },
+            ajax: {
+                url: "/api/section/search",
+                timeout: 500,
+                displayField: "name",
+                triggerLength: 1,
+                method: "get",
+                preProcess: function(data) {
+                    if (data.success === false) {
+                        return false;
+                    }
+                    return data.data;
+                }
+            }
+        });
+
+        $('#modal_browse_section').on('show.bs.modal', function(e) {
+            $modal = $(this);
+            $modal.data('refresh', function() {
+                $.get('/api/section/list', function(pRest) {
+                    if (pRest.success) {
+                        $('tbody .section', $modal).remove();
+
+                        pRest.data.forEach(function(section, idx) {
+                            $('<tr section-id="' + section.id + '" class="section">' +
+                                '<th scope="row">' + section.code + '</th>' +
+                                '<td>' + section.name + '</td>' +
+                            '</tr>').data(section).appendTo($('tbody', $modal));
+                        });
+
+                        $('tfoot', $modal).hide();
+                    }
+                });
+            });
+
+            $modal.data('refresh')();
+        });
+
+        $(document).on('dblclick', '#modal_browse_section tr.section', function() {
+            section = $(this).data();
+            $('.modal-user [name=section_id]').val(section.id);
+            $('.modal-user [name=section_name]').val(section.name);
+
+            $('#modal_browse_section').modal('hide');
+        });
+
+        $(document).on('click', '#modal_browse_section .add', function() {
+            $('#modal_add_edit_section').modal('show');
+        });
+
+        $modalAES = $('#modal_add_edit_section').on('show.bs.modal', function(e) {
+            var $modal = $(this)
+            var section = $modal.data('section');
+
+            if (section == null || section == undefined) {
+                $('form', $modal).attr('action', '/api/section/add');
+            } else {
+                $('form', $modal).attr('action', '/api/section/edit/' + section.id);
+                $('form [name=id]', $modal).val(section.id);
+                $('form [name=code]', $(this)).val(section.code);
+                $('form [name=name]', $modal).val(section.name);
+            }
+        }).on('hidden.bs.modal', function(e) {
+            $(this).data('section', null);
+            $('form [name=id]', $(this)).val('');
+            $('form [name=code]', $(this)).val('');
+            $('form [name=name]', $(this)).val('');
+        });
+
+        $('#modal_add_edit_section form').submit(function(e) {
+            e.preventDefault();
+
+            $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                if (resp.success) {
+                    $modalAES.modal('hide');
+                    $('#modal_browse_section').data('refresh')();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

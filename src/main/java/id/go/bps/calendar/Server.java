@@ -1,33 +1,189 @@
 package id.go.bps.calendar;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import com.hubspot.jinjava.Jinjava;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.StaticHandler;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 public class Server extends AbstractVerticle {
+    private static final Logger logger = Logger.getLogger(Server.class.getName());
+
     @Override
     public void start() throws Exception {
         Router router = Router.router(vertx);
 
-        router.get("/home").handler(routingContext -> {
-            routingContext.response().putHeader("content-type", "text/html").end("Hello World!");
+        router.route("/static/*").handler(StaticHandler.create("static"));
+
+        Map<String, Object> options = new HashMap<String, Object>() {{
+            put("baseUrl", "/");
+            put("calendar", new HashMap<String, Object>() {{
+                put("allEvent", "/api/event/list");
+                put("addEvent", "/api/event/add");
+                put("editEvent", "/api/event/edit");
+                put("delEvent", "/api/event/delete");
+                put("searchEvent", "/api/event/search");
+
+                put("allUser", "/api/user/list");
+                put("addUser", "/api/user/add");
+                put("editUser", "/api/user/edit");
+                put("delUser", "/api/user/delete");
+                put("searchUser", "/api/user/search");
+                put("searchUserRaw", "/api/user/search/raw");
+                put("login", "/api/user/login");
+                put("logout", "/api/user/logout");
+
+                put("allRank", "/api/rank/list");
+                put("addRank", "/api/rank/add");
+                put("editRank", "/api/rank/edit");
+                put("deleteRank", "/api/rank/delete");
+                put("searchRank", "/api/rank/search");
+
+                put("allPosition", "/api/position/list");
+                put("addPosition", "/api/position/add");
+                put("editPosition", "/api/position/edit");
+                put("deletePosition", "/api/position/delete");
+                put("searchPosition", "/api/position/search");
+
+                put("allUnit", "/api/unit/list");
+                put("addUnit", "/api/unit/add");
+                put("editUnit", "/api/unit/edit");
+                put("deleteUnit", "/api/unit/delete");
+
+                put("allTask", "/api/task/list/raw");
+                put("addTask", "/api/task/add");
+                put("editTask", "/api/task/edit");
+                put("resizeTask", "/api/task/edit");
+                put("moveTask", "/api/task/edit");
+                put("deleteTask", "/api/task/delete");
+
+                put("allSetting", "/api/setting");
+                put("saveSetting", "/api/setting/save");
+
+                put("minTime", "7:30");
+                put("monthNamesShort", new String[] {"Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+                        "Jul", "Ags", "Sep", "Okt", "Nov", "Des"});
+                put("allDayText", "Sepanjang Hari");
+                put("dayNames", new String[] {"Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"});
+                put("themeName", "redmond");
+                put("monthNames", new String[] {"Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                        "Juli", "Agustus", "September", "Oktober", "November", "Desember"});
+                put("dayNamesShort", new String[] {"Ahad", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"});
+                put("editable", true);
+                put("slotMinutes", 30);
+                put("header", new HashMap<String, Object>() {{
+                    put("center", "title");
+                    put("left", "prev,next today");
+                    put("right", "month");
+                }});
+                put("timeFormat", "H(:mm)");
+                put("firstDay", "1");
+                put("cronPeriod", "60");
+                put("defaultView", "month");
+                put("theme", false);
+                put("axisFormat", "HH(:mm)");
+                put("buttonText", new HashMap<String, Object>() {{
+                    put("today", "hari ini");
+                    put("month", "bulan");
+                    put("day", "hari");
+                    put("week", "minggu");
+                }});
+                put("firstHour", 8);
+                put("maxTime", "21:00");
+                put("selectable", false);
+            }});
+        }};
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("options", new ObjectMapper().writeValueAsString(options));
+
+        Handler<RoutingContext> calendarHandler = new Handler<RoutingContext>() {
+            @Override
+            public void handle(RoutingContext routingContext) {
+                try {
+                    String template = Resources.toString(Resources.getResource("html/calendar.html"), Charsets.UTF_8);
+                    String renderedTemplate = new Jinjava().render(template, variables);
+
+                    routingContext.response()
+                            .putHeader("content-type", "text/html")
+                            .end(renderedTemplate);
+                } catch (IOException e) {
+                    logger.severe(e.getMessage());
+                }
+
+            }
+        };
+
+        router.get("/").handler(calendarHandler);
+        router.get("/calendar").handler(calendarHandler);
+
+        router.get("/user").handler(new Handler<RoutingContext>() {
+            @Override
+            public void handle(RoutingContext routingContext) {
+                try {
+                    String template = Resources.toString(Resources.getResource("html/user.html"), Charsets.UTF_8);
+                    String renderedTemplate = new Jinjava().render(template, variables);
+
+                    routingContext.response()
+                            .putHeader("content-type", "text/html")
+                            .end(renderedTemplate);
+                } catch (IOException e) {
+                    logger.severe(e.getMessage());
+                }
+
+            }
         });
 
-        vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+        router.get("/event").handler(new Handler<RoutingContext>() {
+            @Override
+            public void handle(RoutingContext routingContext) {
+                try {
+                    String template = Resources.toString(Resources.getResource("html/event.html"), Charsets.UTF_8);
+                    String renderedTemplate = new Jinjava().render(template, variables);
+
+                    routingContext.response()
+                            .putHeader("content-type", "text/html")
+                            .end(renderedTemplate);
+                } catch (IOException e) {
+                    logger.severe(e.getMessage());
+                }
+
+            }
+        });
+
+        vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
+            @Override
+            public void handle(HttpServerRequest httpServerRequest) {
+                router.accept(httpServerRequest);
+            }
+        }).listen(8080);
     }
 
     public static void main(String[] args) {
         String clz = Server.class.getName();
         VertxOptions options = new VertxOptions().setClustered(false);
 
-        Consumer<Vertx> runner = vertx -> {
-            try {
-                vertx.deployVerticle(clz);
-            } catch (Throwable t) {
-                t.printStackTrace();
+        Consumer<Vertx> runner = new Consumer<Vertx>() {
+            @Override
+            public void accept(Vertx vertx) {
+                try {
+                    vertx.deployVerticle(clz);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
             }
         };
 

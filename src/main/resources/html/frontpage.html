@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>BPS Task Calendar - {% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Put CSS Here -->
+    <link href="/static/assets/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/static/assets/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css" rel="stylesheet" />
+    <link href="/static/assets/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="/static/assets/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet" />
+    <link href="/static/assets/colpick/colpick.css" rel="stylesheet" />
+    <link href="/static/assets/jquery-tokeninput/jquery.tokeninput.css" rel="stylesheet" />
+    <link href="/static/assets/jquery-tokeninput/jquery.tokeninput.facebook.css" rel="stylesheet" />
+    <link href="/static/assets/jquery-tokeninput/token-input-bootstrap3.css" rel="stylesheet" />
+    <!--<link href="/static/assets/sliptree-bootstrap-tokenfield/dist/css/bootstrap-tokenfield.min.css" rel="stylesheet" />-->
+    <!--<link href="/static/assets/sliptree-bootstrap-tokenfield/dist/css/tokenfield-typeahead.min.css" rel="stylesheet" />-->
+    <link href="/static/assets/fullcalendar-3.4.0/fullcalendar.min.css" rel="stylesheet" />
+    <link href="/static/assets/fullcalendar-3.4.0/fullcalendar.print.min.css"  rel='stylesheet' media="print" />
+    <link href="/static/assets/application/application.css" rel="stylesheet" />
+
+    <!-- Put JQuery Here -->
+    <script src="/static/assets/jquery-3.2.1/jquery-3.2.1.min.js"></script>
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .table-info,
+        .table-info>td,
+        .table-info>th {
+            background-color: #d9edf7;
+        }
+
+        .table-success,
+        .table-success>td,
+        .table-success>th {
+            background-color: #dff0d8;
+        }
+
+        .table-warning,
+        .table-warning>td,
+        .table-warning>th {
+            background-color: #fcf8e3;
+        }
+
+        .table-danger,
+        .table-danger>td,
+        .table-danger>th {
+            background-color: #f2dede;
+        }
+
+        .material-switch>input[type="checkbox"] {
+            display: none;
+        }
+
+        .material-switch>label {
+            cursor: pointer;
+            height: 0px;
+            position: relative;
+            width: 40px;
+        }
+
+        .material-switch>label::before {
+            background: rgb(0, 0, 0);
+            box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            content: '';
+            height: 16px;
+            margin-top: -8px;
+            position: absolute;
+            opacity: 0.3;
+            transition: all 0.4s ease-in-out;
+            width: 40px;
+        }
+
+        .material-switch>label::after {
+            background: rgb(255, 255, 255);
+            border-radius: 16px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+            content: '';
+            height: 24px;
+            left: -4px;
+            margin-top: -8px;
+            position: absolute;
+            top: -4px;
+            transition: all 0.3s ease-in-out;
+            width: 24px;
+        }
+
+        .material-switch>input[type="checkbox"]:checked+label::before {
+            background: inherit;
+            opacity: 0.5;
+        }
+
+        .material-switch>input[type="checkbox"]:checked+label::after {
+            background: inherit;
+            left: 20px;
+        }
+    </style>
+
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+<nav class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container navbar-container">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand brand-bps" href="/"></a>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/user">Petugas</a></li>
+                    <li><a href="/event">Kegiatan</a></li>
+                    <li><a href="/calendar">Kalender</a></li>
+                </ul>
+                <ul class="nav navbar-nav pull-right">
+                    <li class="dropdown user-info">
+                        <a class="dropdown-toggle user-name" href="#" data-toggle="dropdown">Administrator</a>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a class="menu-logout" href="/api/user/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                    <li><a class="btn-setting" href="#"><i class="sprite-tools"></i></a></li>
+
+
+                    <!--<li class="dropdown">
+                        <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+                            <i class="sprite-tools"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a class="menu-logout" href="/api/user/logout">Logout</a></li>
+                        </ul>
+                    </li>-->
+                </ul>
+                {% block menu %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<nav class="navbar navbar-fixed-bottom">
+    <div class="navbar-inner">
+        <div class="container navbar-container">
+            <ul class="nav navbar-nav">
+                <li><a>Task Calendar v.0.0.1-beta</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    {% block content %}{% endblock %}
+
+    <div class="modal fade" id="mdl_login" tabindex="-1" role="dialog" aria-labelledby="mdl_login_label">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form method="post" action="/api/user/login">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h5 class="modal-title" id="mdl_login_label">Login</h5>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <input name="username" type="text" placeholder="Username" class="form-control input-md" autocomplete="off">
+                            </li>
+                            <li class="list-group-item">
+                                <input name="password" type="password" placeholder="Password" class="form-control input-md" autocomplete="off">
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_setting" tabindex="-1" role="dialog" aria-labelledby="modal_setting_label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form class="form-horizontal" action="{{ options.calendar.saveSetting }}" method="post">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title" id="modal_setting_label">Pengaturan</h5>
+                </div>
+                <div class="modal-body">
+                    <fieldset>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">BPS</label>
+                                    <div class="col-md-8">
+                                        <input name="geographic_name" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Kepala Intansi</label>
+                                    <div class="col-md-8">
+                                        <input name="chief_id" type="hidden" />
+                                        <input name="chief_name" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">PPK Intansi</label>
+                                    <div class="col-md-8">
+                                        <input name="ppk_id" type="hidden" />
+                                        <input name="ppk_name" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Alamat Intansi</label>
+                                    <div class="col-md-8">
+                                        <input name="address" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Telepon Intansi</label>
+                                    <div class="col-md-8">
+                                        <input name="phone" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Fax Intansi</label>
+                                    <div class="col-md-8">
+                                        <input name="fax" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Website Intansi</label>
+                                    <div class="col-md-8">
+                                        <input name="website" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Email Intansi</label>
+                                    <div class="col-md-8">
+                                        <input name="email" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Format No. Surat</label>
+                                    <div class="col-md-8">
+                                        <input name="tl_format" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">Kota Surat Tugas</label>
+                                    <div class="col-md-8">
+                                        <input name="capital" type="text" placeholder="Wajib Diisi" class="form-control input-md" autocomplete="off" required="">
+                                        <span class="help-block">Nama Wilayah, seperti : Republik Indonesia, Provinsi Banten</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </fieldset>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Put JS Here -->
+<script src="/static/assets/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script src="/static/assets/moment.js/moment.js"></script>
+<script src="/static/assets/moment-duration-format/moment-duration-format.js"></script>
+<!--<script src="/static/assets/typeahead.js/bloodhound.min.js"></script>-->
+<script src="/static/assets/bootstrap-ajax-typeahead/bootstrap-typeahead.min.js"></script>
+<!--<script src="/static/assets/sliptree-bootstrap-tokenfield/dist/bootstrap-tokenfield.min.js"></script>-->
+<script src="/static/assets/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<script src="/static/assets/jquery-tokeninput/jquery.tokeninput.js"></script>
+<script src="/static/assets/colpick/colpick.js"></script>
+<script src="/static/assets/fullcalendar-3.4.0/fullcalendar.min.js"></script>
+<script src="/static/assets/jquery-form/jquery.form.js"></script>
+<script type="text/javascript">
+    var opts = JSON.parse('{{ options }}');
+
+    (function($) {
+        $.fn.dumpJSON = function() {
+            var $form = this;
+
+            var formArray = $form.serializeArray();
+            var formJSON = {};
+
+            $.map(formArray, function(n, i){
+                if (n['name'] in formJSON) {
+                    if ($.isArray(formJSON[n['name']])) {
+                        formJSON[n['name']].push(n['value']);
+                    } else {
+                        v = formJSON[n['name']];
+                        formJSON[n['name']] = [v, n['value']];
+                    }
+                } else {
+                    formJSON[n['name']] = n['value'];
+                }
+            });
+
+            return formJSON;
+        }
+
+        $.fn.loadJSON = function(data) {
+            var frm = this;
+
+            $.each(data, function(key, value) {
+                var $ctrl = $('[name=' + key + ']', frm);
+                if ($ctrl.is('select')) {
+                    $("option", $ctrl).each(function() {
+                        if (this.value == value) {
+                            this.selected = true;
+                        }
+                    });
+                } else {
+                    switch ($ctrl.attr("type")) {
+                        case "text":
+                        case "hidden":
+                        case "textarea":
+                            $ctrl.val(value);
+                            break;
+                        case "radio":
+                        case "checkbox":
+                            $ctrl.each(function() {
+                                if ($(this).attr('value') == value) {
+                                    $(this).attr("checked", value);
+                                }
+                            });
+                            break;
+                    }
+                }
+            });
+
+            return frm;
+        }
+
+        $.fn.colorPicker = function() {
+            var $textbox = this;
+
+            $textbox.colpick({
+                layout: "hex",
+                submit: 0,
+                onShow: function() {
+                    $("#"+$(this).data("colpickId")).css("z-index", 4);
+                },
+                onChange: function(hsb, hex, rgb, el, bySetColor) {
+                    $(el).css("border-color", "#" + hex);
+                    if(!bySetColor) $(el).val(hex);
+                }
+            }).keyup(function() {
+                $(this).colpickSetColor(lbColor.value);
+            });
+
+            return $textbox;
+        }
+
+        $(document).on('show.bs.modal', '.modal', function () {
+            var zIndex = 1040 + (10 * $('.modal:visible').length);
+            $(this).css('z-index', zIndex);
+            setTimeout(function() {
+                $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+            }, 0);
+        });
+
+        $(document).on('hidden.bs.modal', '.modal', function () {
+             $(this).removeData('bs.modal');
+        });
+
+        $('#mdl_login form').submit(function(e) {
+            e.preventDefault();
+
+            $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                if (resp.success) {
+                    $('#mdl_login').modal('hide');
+                }
+            });
+        });
+
+        $('#mdl_login').on('hidden.bs.modal', function(e) {
+            $.checkCredential();
+        });
+
+        $(document).on('click', '.menu-logout', function(e) {
+            e.preventDefault();
+
+            $.get($(this).attr('href'), function(resp) {
+                if (resp.success) {
+                    $('#mdl_login').modal('show')
+                }
+            });
+        });
+
+        $(document).on('click', '.btn-setting', function() {
+            $('#modal_setting').modal('show');
+        });
+
+        $modalS = $('#modal_setting').on('show.bs.modal', function () {
+            $chiefId = $('[name=chief_id]', $modalS);
+            $chiefName = $('[name=chief_name]', $modalS).typeahead({
+                onSelect: function(item) {
+                    $chiefId.val(item.value);
+                    $chiefName.val(item.text)
+                },
+                ajax: {
+                    url: opts.calendar.searchUser,
+                    timeout: 500,
+                    displayField: "fullname",
+                    triggerLength: 1,
+                    method: "get",
+                    preProcess: function(data) {
+                        if (data.success === false) {
+                            return false;
+                        }
+                        return data.data;
+                    }
+                }
+            });
+
+            $ppkId = $('[name=ppk_id]', $modalS);
+            $ppkName = $('[name=ppk_name]', $modalS).typeahead({
+                onSelect: function(item) {
+                    $ppkId.val(item.value);
+                    $ppkName.val(item.text)
+                },
+                ajax: {
+                    url: opts.calendar.searchUser,
+                    timeout: 500,
+                    displayField: "fullname",
+                    triggerLength: 1,
+                    method: "get",
+                    preProcess: function(data) {
+                        if (data.success === false) {
+                            return false;
+                        }
+                        return data.data;
+                    }
+                }
+            });
+
+            $('form', $(this)).submit(function(e) {
+                e.preventDefault();
+
+                $.post($(this).attr('action'), $(this).dumpJSON(), function(resp) {
+                    if (resp.success) {
+                        $modalS.modal('hide');
+                    }
+                });
+            });
+
+            $.get('/api/setting', function(sResp) {
+                if (sResp.success) {
+                    setting = sResp.data;
+
+                    $('[name=geographic_name]', $modalS).val(setting.geographic_name);
+                    $('[name=chief_id]', $modalS).val(setting.chief ? setting.chief.id : '');
+                    $('[name=chief_name]', $modalS).val(setting.chief ? setting.chief.fullname : '');
+                    $('[name=ppk_id]', $modalS).val(setting.ppk ? setting.ppk.id : '');
+                    $('[name=ppk_name]', $modalS).val(setting.ppk ? setting.ppk.fullname : '');
+                    $('[name=address]', $modalS).val(setting.address);
+                    $('[name=phone]', $modalS).val(setting.phone);
+                    $('[name=fax]', $modalS).val(setting.fax);
+                    $('[name=website]', $modalS).val(setting.website);
+                    $('[name=email]', $modalS).val(setting.email);
+                    $('[name=tl_format]', $modalS).val(setting.tl_format);
+                    $('[name=capital]', $modalS).val(setting.capital);
+                }
+            });
+        });
+
+        $.checkCredential = function(callback) {
+            $.get('/api/user/check-credential', function(cResp) {
+                if (cResp.success) {
+                    var credential = cResp.data;
+
+                    if (! credential.logged_in) {
+                        $('#mdl_login').modal('show');
+                    } else {
+                        $('.user-info .user-name').html(credential.logged_user.fullname);
+                        if(callback) {
+                            callback(credential.logged_user);
+                        }
+                        setTimeout($.checkCredential, 30000);
+                    }
+                } else {
+                    $('#mdl_login').modal('show')
+                }
+            });
+        }
+
+        $.checkCredential();
+    })(jQuery);
+</script>
+
+{% block tail %}{% endblock %}
+</body>
+
+</html>
