@@ -3,18 +3,24 @@ package id.go.bps.calendar;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.google.protobuf.Empty;
 import com.hubspot.jinjava.Jinjava;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import id.go.bps.request.RequestID;
+import id.go.bps.user.Position;
+import id.go.bps.user.PositionServiceGrpc;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.vertx.core.*;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -24,7 +30,47 @@ public class Server extends AbstractVerticle {
 
     @Override
     public void start() throws Exception {
+        ManagedChannel userChannel = ManagedChannelBuilder.forAddress("localhost", 50051)
+                .usePlaintext(true)
+                .build();
+
+        PositionServiceGrpc.PositionServiceBlockingStub positionStub = PositionServiceGrpc.newBlockingStub(userChannel);
+
         Router router = Router.router(vertx);
+
+        router.get("/api/position/list").handler(requestHandler -> {
+            Iterator<Position> positions = positionStub.list(Empty.newBuilder().build());
+
+            requestHandler.response()
+                    .putHeader("content-type", "application/json; charset=utf-8")
+                    .end(Json.encodePrettily(positions));
+        });
+
+        router.get("/api/position/:id").handler(requestHandler -> {
+            String id = requestHandler.request().getParam("id");
+
+            Position position = null;
+            try {
+                position = positionStub.get(RequestID.newBuilder().setId(id).build());
+            } catch (Exception e) {}
+
+            HttpServerResponse response = requestHandler.response()
+                    .putHeader("content-type", "application/json; charset=utf-8");
+
+            if(response != null) {
+                response.end(Json.encodePrettily(position));
+            } else {
+                response.end();
+            }
+        });
+
+        router.post("/api/position/add").handler(requestHandler -> {
+            String form = requestHandler.request().toString();
+
+            positionStub.add(Position.newBuilder()
+//                    .setId(form.get("id"))
+                    .build());
+        });
 
         router.route("/static/*").handler(StaticHandler.create("static"));
 

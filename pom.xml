@@ -17,6 +17,14 @@
     </properties>
 
     <dependencies>
+        <!--Guava-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!--Webapp-->
         <dependency>
             <groupId>io.vertx</groupId>
@@ -38,6 +46,11 @@
 
 
         <!--Grpc-->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
