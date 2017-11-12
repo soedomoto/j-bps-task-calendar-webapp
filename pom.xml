@@ -12,8 +12,10 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <grpc.version>1.7.0</grpc.version>
-        <ormlite.version>5.0</ormlite.version>
         <commons-cli.version>1.4</commons-cli.version>
+        <vertx.version>3.5.0</vertx.version>
+        <atomix.version>1.0.8</atomix.version>
+        <jinjava.version>2.3.0</jinjava.version>
     </properties>
 
     <dependencies>
@@ -29,21 +31,13 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
-            <version>3.5.0</version>
+            <version>${vertx.version}</version>
         </dependency>
         <dependency>
             <groupId>com.hubspot.jinjava</groupId>
             <artifactId>jinjava</artifactId>
-            <version>2.3.0</version>
+            <version>${jinjava.version}</version>
         </dependency>
-
-        <!--JSON-->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.9.2</version>
-        </dependency>
-
 
         <!--Grpc-->
         <dependency>
@@ -61,17 +55,32 @@
             <artifactId>grpc-stub</artifactId>
             <version>${grpc.version}</version>
         </dependency>
+
+        <!--Atomix-->
         <dependency>
-            <groupId>com.google.api.grpc</groupId>
-            <artifactId>proto-google-common-protos</artifactId>
-            <version>0.1.9</version>
+            <groupId>io.atomix</groupId>
+            <artifactId>atomix-all</artifactId>
+            <version>${atomix.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.atomix.catalyst</groupId>
+            <artifactId>catalyst-common</artifactId>
+            <version>${atomix.version}</version>
+        </dependency>
+
 
         <!--CLI-->
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
             <version>${commons-cli.version}</version>
+        </dependency>
+
+        <!--Logger-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.6.4</version>
         </dependency>
     </dependencies>
 

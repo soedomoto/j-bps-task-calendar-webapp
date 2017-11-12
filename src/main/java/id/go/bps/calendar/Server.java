@@ -3,74 +3,46 @@ package id.go.bps.calendar;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import com.google.protobuf.Empty;
 import com.hubspot.jinjava.Jinjava;
-import id.go.bps.request.RequestID;
-import id.go.bps.user.Position;
-import id.go.bps.user.PositionServiceGrpc;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import id.go.bps.calendar.handler.*;
+import io.atomix.AtomixReplica;
+import io.atomix.catalyst.transport.Address;
+import io.atomix.catalyst.transport.netty.NettyTransport;
+import io.atomix.copycat.server.storage.Storage;
+import io.atomix.vertx.AtomixClusterManager;
+import io.atomix.vertx.ClusterSerializableSerializer;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
+import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
+import org.apache.commons.cli.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.function.Consumer;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
 public class Server extends AbstractVerticle {
     private static final Logger logger = Logger.getLogger(Server.class.getName());
+    private final Integer port;
+
+    public Server(Integer port) {
+        this.port = port;
+    }
 
     @Override
-    public void start() throws Exception {
-        ManagedChannel userChannel = ManagedChannelBuilder.forAddress("localhost", 50051)
-                .usePlaintext(true)
-                .build();
-
-        PositionServiceGrpc.PositionServiceBlockingStub positionStub = PositionServiceGrpc.newBlockingStub(userChannel);
-
+    public void start(Future<Void> future) throws Exception {
         Router router = Router.router(vertx);
 
-        router.get("/api/position/list").handler(requestHandler -> {
-            Iterator<Position> positions = positionStub.list(Empty.newBuilder().build());
-
-            requestHandler.response()
-                    .putHeader("content-type", "application/json; charset=utf-8")
-                    .end(Json.encodePrettily(positions));
-        });
-
-        router.get("/api/position/:id").handler(requestHandler -> {
-            String id = requestHandler.request().getParam("id");
-
-            Position position = null;
-            try {
-                position = positionStub.get(RequestID.newBuilder().setId(id).build());
-            } catch (Exception e) {}
-
-            HttpServerResponse response = requestHandler.response()
-                    .putHeader("content-type", "application/json; charset=utf-8");
-
-            if(response != null) {
-                response.end(Json.encodePrettily(position));
-            } else {
-                response.end();
-            }
-        });
-
-        router.post("/api/position/add").handler(requestHandler -> {
-            String form = requestHandler.request().toString();
-
-            positionStub.add(Position.newBuilder()
-//                    .setId(form.get("id"))
-                    .build());
-        });
+        new EventHandler(router, "localhost", 50051).setup();
+        new PositionHandler(router, "localhost", 50051).setup();
+        new RankHandler(router, "localhost", 50051).setup();
+        new SettingHandler(router, "localhost", 50051).setup();
+        new TaskHandler(router, "localhost", 50051).setup();
+        new UnitHandler(router, "localhost", 50051).setup();
+        new UserHandler(router, "localhost", 50051).setup();
 
         router.route("/static/*").handler(StaticHandler.create("static"));
 
@@ -215,24 +187,116 @@ public class Server extends AbstractVerticle {
             public void handle(HttpServerRequest httpServerRequest) {
                 router.accept(httpServerRequest);
             }
-        }).listen(8080);
+        }).listen(port, result -> {
+            if (result.succeeded()) {
+                future.complete();
+            } else {
+                future.fail(result.cause());
+            }
+        });
     }
 
-    public static void main(String[] args) {
-        String clz = Server.class.getName();
-        VertxOptions options = new VertxOptions().setClustered(false);
+    public static void main(String[] args) throws ParseException {
+        Options options = new Options();
+        options.addOption("h", "help", false, "print this message.");
+        options.addOption("p", "ports", true, "Set server port range with " +
+                "format \"start[-end]\". Default: 8080.");
+        options.addOption("P", "registry-port", true, "Set service registry server " +
+                "port. Default: 8801.");
+        options.addOption("j", "join", true, "Join to cluster registry server with format " +
+                "host:port. Default: blank.");
 
-        Consumer<Vertx> runner = new Consumer<Vertx>() {
-            @Override
-            public void accept(Vertx vertx) {
-                try {
-                    vertx.deployVerticle(clz);
-                } catch (Throwable t) {
-                    t.printStackTrace();
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse( options, args);
+        HelpFormatter formatter = new HelpFormatter();
+
+        if(cmd.hasOption("help")) {
+            formatter.printHelp( "bps-task-calendar-server", options);
+            return;
+        }
+
+        String portRange = cmd.getOptionValue("p", "8080");
+        String[] startEnd = portRange.split("-");
+        String joinHost = null;
+        Integer serviceRegistryPort = null, startPort = null, endPort = null, joinPort = null;
+        try {
+            serviceRegistryPort = Integer.valueOf(cmd.getOptionValue("P", "8801"));
+            String joinURI = cmd.getOptionValue("j");
+            if (joinURI != null && ! joinURI.equalsIgnoreCase("")) {
+                String[] joinHP = joinURI.split(":");
+                if (joinHP.length == 2) {
+                    joinHost = joinHP[0];
+                    joinPort = Integer.parseInt(joinHP[1]);
+                } else {
+                    logger.severe("Invalid join URI format !!!");
+                    return;
                 }
             }
-        };
 
-        runner.accept(Vertx.vertx(options));
+            if (startEnd.length == 2) {
+                startPort = Integer.valueOf(startEnd[0]);
+                endPort = Integer.valueOf(startEnd[1]);
+            } else {
+                startPort = Integer.valueOf(startEnd[0]);
+            }
+        } catch (NumberFormatException e) {
+            logger.severe(e.getMessage());
+            return;
+        }
+
+        // Run single atomix server
+        if (serviceRegistryPort == null) {
+            logger.severe("No service registry server port defined !!!");
+            return;
+        }
+
+        AtomixReplica replica = AtomixReplica.builder(new Address("0.0.0.0", serviceRegistryPort))
+                .withTransport(new NettyTransport())
+                .withStorage(Storage.builder()
+                        .withDirectory(System.getProperty("user.dir") + "/logs/" + UUID.randomUUID().toString())
+                        .build())
+                .build();
+
+        CompletableFuture<AtomixReplica> future;
+        if (joinHost != null && joinPort != null) {
+            future = replica.join(new Address(joinHost, joinPort));
+        } else {
+            future = replica.bootstrap();
+        }
+
+        // Run multiple GRPC servers
+        List<Integer> ports = new ArrayList<Integer>();
+        if (startPort != null) {
+            if (endPort != null) {
+                for(int p=startPort; p<=endPort; p++) {
+                    ports.add(p);
+                }
+            } else {
+                ports.add(startPort);
+            }
+        }
+
+        if (ports.size() == 0) {
+            logger.severe("No port(s) defined !!!");
+            return;
+        }
+
+        future.thenRun(new Runnable() {
+            @Override
+            public void run() {
+                VertxOptions options = new VertxOptions().setClusterManager(new AtomixClusterManager(replica));
+                Vertx.clusteredVertx(options, new Handler<AsyncResult<Vertx>>() {
+                    @Override
+                    public void handle(AsyncResult<Vertx> res) {
+                        if (res.succeeded()) {
+                            Vertx vertx = res.result();
+                            for(Integer port : ports) {
+                                vertx.deployVerticle(new Server(port));
+                            }
+                        }
+                    }
+                });
+            }
+        });
     }
 }
